@@ -2,7 +2,7 @@
 
 <img src="https://github.com/XJINE/Unity_TextShader/blob/master/Screenshot.jpg" width="100%" height="auto" />
 
-Draw your text in ImageEffect (with fragment shader). This effect should be used for a debug.
+TextShader draw your text as ImageEffect (with fragment shader). This effect should be used for a debug.
 
 ## How to use
 

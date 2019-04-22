@@ -9,7 +9,7 @@ public class Sample : MonoBehaviour
         this.textShader.DrawText("!", Random.value, Random.value, Random.value);
 
         this.textShader.DrawText("HelloWorld", 0.35f, 0.5f,
-            ScreenPixelSpaceConverter.ToScreenSpace(50, 50).x, Color.green);
+            ScreenUtil.PixelToScreen(50, 50).x, Color.green);
 
         this.textShader.DrawText("Line\\Break", 0.3f, 0.3f, 0.02f);
 

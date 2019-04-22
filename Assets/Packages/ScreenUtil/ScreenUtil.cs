@@ -13,23 +13,23 @@ public static class ScreenUtil
 
     #region Method
 
-    public static Vector2Int ScreenToPixel(Vector2 coord)
+    public static Vector2Int ViewportToScreen(Vector2 coord)
     {
-        return ScreenUtil.ScreenToPixel(coord.x, coord.y);
+        return ScreenUtil.ViewportToScreen(coord.x, coord.y);
     }
 
-    public static Vector2Int ScreenToPixel(float coordX, float coordY)
+    public static Vector2Int ViewportToScreen(float coordX, float coordY)
     {
         return new Vector2Int((int)(Screen.width  * coordX),
                               (int)(Screen.height * coordY));
     }
 
-    public static Vector2 PixelToScreen(Vector2Int coord)
+    public static Vector2 ScreenToViewport(Vector2Int coord)
     {
-        return ScreenUtil.PixelToScreen(coord.x, coord.y);
+        return ScreenUtil.ScreenToViewport(coord.x, coord.y);
     }
 
-    public static Vector2 PixelToScreen(int coordX, int coordY)
+    public static Vector2 ScreenToViewport(int coordX, int coordY)
     {
         return new Vector2((float)coordX / Screen.width,
                            (float)coordY / Screen.height);

@@ -10,7 +10,7 @@ TextShader draw your text as ImageEffect (with fragment shader). This effect sho
 effect.DrawText("Your Text", posX, posY, size, color);
 ```
 
-Set your text and the parameters in screen space.
+Set your text and the parameters in viewport(uv) space.
 
 ### Limitation
 

@@ -52,20 +52,21 @@
             };
 
             static const int RETURN_CODE    = 60;
-            static const int MAX_CHAR_COUNT = 10;
 
             struct TextData
             {
                 // NOTE:
+                // index.x      = offset.
+                // index.y      = length.
                 // parameter.xy = position.
                 // parameter.z  = charSize.
-                // parameter.w  = charLength.
 
-                int chars[MAX_CHAR_COUNT];
-                float4 parameter;
+                float2 index;
+                float3 parameter;
                 float4 color;
             };
 
+            StructuredBuffer<int>      _TextBuffer;
             StructuredBuffer<TextData> _TextDataBuffer;
 
             sampler2D _MainTex;
@@ -99,30 +100,35 @@
 
                 TextData textData;
 
+                int    char;
+                int    charOffset;
+                int    charLength;
                 float2 charPos;
                 float2 charSize;
-                float  charLength;
                 float4 charColor;
 
                 for (int i = 0; i < textDataBufferLength; i++)
                 {
                     textData = _TextDataBuffer[i];
 
+                    charOffset = textData.index.x;
+                    charLength = textData.index.y;
                     charPos    = textData.parameter.xy;
                     charSize   = float2(textData.parameter.z, textData.parameter.z * aspect);
-                    charLength = textData.parameter.w;
                     charColor  = textData.color;
 
                     for(int j = 0; j < charLength; j++)
                     {
-                        if(textData.chars[j] == RETURN_CODE)
+                        char = _TextBuffer[charOffset + j];
+
+                        if(char == RETURN_CODE)
                         {
                             charPos.x = textData.parameter.x;
                             charPos.y -= charSize.y;
                             continue;
                         }
 
-                        DrawChar(input.uv, charPos, charSize, charColor, textData.chars[j], color);
+                        DrawChar(input.uv, charPos, charSize, charColor, char, color);
                         charPos.x += charSize.x;
                     }
                 }

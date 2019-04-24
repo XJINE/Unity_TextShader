@@ -14,7 +14,6 @@ Set your text and the parameters in viewport(uv) space.
 
 ### Limitation
 
- - Max text length is 10 (characters).
  - Valid characters are AsciiCode number 32 ~ 126.
  - `\`(back slash) becomes line-break.
 

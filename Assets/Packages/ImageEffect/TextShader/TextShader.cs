@@ -74,31 +74,28 @@ public class TextShader : ImageEffectBase
         'p','q','r','s','t','u','v','w','x','y','z','{','|','}','~',
     };
 
-    protected static          int TextDataBufferID  = -1;
-    protected static readonly int MaxTextDataLength = 10;
+    protected static int TextBufferID     = -1;
+    protected static int TextDataBufferID = -1;
 
     [System.Serializable]
     public struct TextData
     {
-        public int char0;
-        public int char1;
-        public int char2;
-        public int char3;
-        public int char4;
-        public int char5;
-        public int char6;
-        public int char7;
-        public int char8;
-        public int char9;
-        public Vector4 parameter;
-        public Color color;
+        // NOTE:
+        // index.x      = offset.
+        // index.y      = length.
+        // parameter.xy = position.
+        // parameter.z  = charSize.
+
+        public Vector2 index;
+        public Vector3 parameter;
+        public Color   color;
     }
 
+    private ComputeBuffer textBuffer;
     private ComputeBuffer textDataBuffer;
 
+    private readonly List<int>      textList     = new List<int>();
     private readonly List<TextData> textDataList = new List<TextData>();
-
-    public bool autoClear = true;
 
     #endregion Field
 
@@ -123,37 +120,47 @@ public class TextShader : ImageEffectBase
             base.material.SetTexture("_FontTex", TextShader.SpriteFontTexture);
         }
 
-        if (TextShader.TextDataBufferID < 0)
+        if (TextShader.TextBufferID < 0)
         {
-            TextDataBufferID = Shader.PropertyToID("_TextDataBuffer");
+            TextShader.TextBufferID     = Shader.PropertyToID("_TextBuffer");
+            TextShader.TextDataBufferID = Shader.PropertyToID("_TextDataBuffer");
         }
     }
 
     protected override void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
-        if (this.textDataList.Count != 0)
+        if (this.textList.Count != 0)
         {
-            this.textDataBuffer = new ComputeBuffer(textDataList.Count, Marshal.SizeOf(typeof(TextData)));
-            this.textDataBuffer.SetData(textDataList);
+            this.textBuffer = new ComputeBuffer(this.textList.Count, Marshal.SizeOf(typeof(int)));
+            this.textBuffer.SetData(this.textList);
 
+            this.textDataBuffer = new ComputeBuffer(this.textDataList.Count, Marshal.SizeOf(typeof(TextData)));
+            this.textDataBuffer.SetData(this.textDataList);
+
+            base.material.SetBuffer(TextShader.TextBufferID,     this.textBuffer);
             base.material.SetBuffer(TextShader.TextDataBufferID, this.textDataBuffer);
         }
 
         base.OnRenderImage(src, dest);
 
-        if (this.textDataBuffer != null)
+        if (this.textBuffer != null)
         {
+            this.textBuffer.Release();
             this.textDataBuffer.Release();
         }
 
-        if (this.autoClear)
-        {
-            this.textDataList.Clear();
-        }
+        this.textList.Clear();
+        this.textDataList.Clear();
     }
 
     protected void OnDestroy()
     {
+        if (this.textBuffer != null)
+        {
+            this.textBuffer.Release();
+            this.textBuffer = null;
+        }
+
         if (this.textDataBuffer != null)
         {
             this.textDataBuffer.Release();
@@ -161,19 +168,21 @@ public class TextShader : ImageEffectBase
         }
     }
 
-    public void Clear()
+    public void DrawText(string text, float posX, float posY, float size)
     {
-        if (this.textDataList != null)
-        {
-            this.textDataList.Clear();
-        }
+        DrawText(text, posX, posY, size, Color.white);
     }
 
-    public void SetTextToTextData(string text, ref TextData textData)
+    public void DrawText(string text, float posX, float posY, float size, Color color)
     {
-        int textLength = Mathf.Min(text.Length, TextShader.MaxTextDataLength);
+        int textLength = text.Length;
 
-        textData.parameter.w = textLength;
+        this.textDataList.Add(new TextData()
+        {
+            index     = new Vector2(this.textList.Count, textLength),
+            parameter = new Vector3(posX, posY, size),
+            color     = color
+        });
 
         for (int i = 0; i < textLength; i++)
         {
@@ -188,39 +197,8 @@ public class TextShader : ImageEffectBase
             charCode = validCode ? charCode - TextShader.AsciiCodeStart
                                  : TextShader.AsciiCodeDelete;
 
-            switch (i)
-            {
-                case 0: textData.char0 = charCode; continue;
-                case 1: textData.char1 = charCode; continue;
-                case 2: textData.char2 = charCode; continue;
-                case 3: textData.char3 = charCode; continue;
-                case 4: textData.char4 = charCode; continue;
-                case 5: textData.char5 = charCode; continue;
-                case 6: textData.char6 = charCode; continue;
-                case 7: textData.char7 = charCode; continue;
-                case 8: textData.char8 = charCode; continue;
-                case 9: textData.char9 = charCode; continue;
-                default: break;
-            }
+            this.textList.Add(charCode);
         }
-    }
-
-    public void DrawText(string text, float posX, float posY, float size)
-    {
-        DrawText(text, posX, posY, size, Color.white);
-    }
-
-    public void DrawText(string text, float posX, float posY, float size, Color color)
-    {
-        TextData textData = new TextData()
-        {
-            parameter = new Vector4(posX, posY, size, 0),
-            color = color
-        };
-
-        SetTextToTextData(text, ref textData);
-
-        this.textDataList.Add(textData);
     }
 
     #endregion Method

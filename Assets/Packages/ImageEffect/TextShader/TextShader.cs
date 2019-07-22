@@ -113,7 +113,6 @@ public class TextShader : ImageEffectBase
                             false)
             {
                 filterMode = FilterMode.Point,
-                alphaIsTransparency = true
             };
 
             TextShader.SpriteFontTexture.LoadImage(TextShader.SpriteFontTextureData);
